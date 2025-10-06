@@ -6,12 +6,10 @@ import { Ionicons } from '@expo/vector-icons';
 
 import HomeScreen from './src/screens/HomeScreen';
 import MapViewScreen from './src/screens/MapViewScreen';
-import DamageListScreen from './src/screens/DamageListScreen';
-import StatisticsScreen from './src/screens/StatisticsScreen';
 
 const Tab = createBottomTabNavigator();
 
-export default function App() {
+const App = () => {
   return (
     <PaperProvider>
       <NavigationContainer>
@@ -24,10 +22,6 @@ export default function App() {
                 iconName = focused ? 'home' : 'home-outline';
               } else if (route.name === 'MapView') {
                 iconName = focused ? 'map' : 'map-outline';
-              } else if (route.name === 'DamageList') {
-                iconName = focused ? 'list' : 'list-outline';
-              } else if (route.name === 'Statistics') {
-                iconName = focused ? 'stats-chart' : 'stats-chart-outline';
               } else {
                 iconName = 'help-outline';
               }
@@ -61,24 +55,10 @@ export default function App() {
               tabBarLabel: 'Harita'
             }}
           />
-          <Tab.Screen 
-            name="DamageList" 
-            component={DamageListScreen} 
-            options={{
-              title: 'Hasar Listesi',
-              tabBarLabel: 'Hasarlar'
-            }}
-          />
-          <Tab.Screen 
-            name="Statistics" 
-            component={StatisticsScreen} 
-            options={{
-              title: 'İstatistikler',
-              tabBarLabel: 'İstatistik'
-            }}
-          />
         </Tab.Navigator>
       </NavigationContainer>
     </PaperProvider>
   );
-}
+};
+
+export default App;
