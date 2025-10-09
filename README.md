@@ -110,6 +110,7 @@ interface AIDetectionResult {
 - [ ] **Export Functionality** - PDF/Excel rapor çıktısı
 - [ ] **Multi-Language** - Çoklu dil desteği
 - [ ] **Dark Mode** - Karanlık tema seçeneği
+- [ ] Hasarları koordinat bazlı alacak yakın bir alanda fazlaca hasar bildirisi eklenince nokta büyüyecek alan bazlı kaplama olacak. Korona zamanı hasta sayısı arttıkça bölgenin kızarması ve alanın büyümesi gibi
 
 ## 🤝 Katkıda Bulunma
 
