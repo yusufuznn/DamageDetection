@@ -19,13 +19,6 @@ const StatisticsScreen = () => {
   const [stats, setStats] = useState<DamageStatistics>(mockStatistics);
   const [selectedPeriod, setSelectedPeriod] = useState('today');
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('tr-TR', {
-      style: 'currency',
-      currency: 'TRY'
-    }).format(amount);
-  };
-
   const calculateDamageTypeStats = () => {
     const typeStats: { [key: string]: number } = {};
     mockRoadDamages.forEach(damage => {
@@ -68,12 +61,6 @@ const StatisticsScreen = () => {
               %{stats.averageConfidence}
             </Title>
             <Paragraph style={styles.summaryLabel}>Ort. Güven</Paragraph>
-          </View>
-          <View style={styles.summaryItem}>
-            <Title style={[styles.summaryNumber, { color: '#ff9800' }]}>
-              {formatCurrency(stats.estimatedTotalCost)}
-            </Title>
-            <Paragraph style={styles.summaryLabel}>Tahmini Maliyet</Paragraph>
           </View>
         </View>
       </Surface>
@@ -231,18 +218,6 @@ const StatisticsScreen = () => {
                 <Title style={styles.highlightTitle}>Ortalama Güven Skoru</Title>
                 <Paragraph style={styles.highlightDescription}>
                   %{stats.averageConfidence} (Yüksek güvenilirlik)
-                </Paragraph>
-              </View>
-            </View>
-          </Surface>
-
-          <Surface style={styles.highlightCard}>
-            <View style={styles.highlightContent}>
-              <List.Icon icon="currency-try" color="#ff9800" />
-              <View style={styles.highlightText}>
-                <Title style={styles.highlightTitle}>Toplam Tahmini Maliyet</Title>
-                <Paragraph style={styles.highlightDescription}>
-                  {formatCurrency(stats.estimatedTotalCost)}
                 </Paragraph>
               </View>
             </View>

@@ -13,7 +13,6 @@ export interface RoadDamage {
   imageUrl?: string; // İHA'dan gelen görüntü URL'i
   processed: boolean;
   priority: number; // 1-5 arası öncelik
-  estimatedRepairCost?: number;
   weatherCondition?: string;
   trafficLevel?: 'low' | 'medium' | 'high';
 }
@@ -32,6 +31,20 @@ export interface RoadSegment {
   totalLength: number; // km cinsinden
   lastUpdated: string;
   damages: RoadDamage[]; // Bu yol segmentindeki hasarlar
+}
+
+export interface DamageHeatZone {
+  id: string;
+  center: {
+    latitude: number;
+    longitude: number;
+  };
+  radius: number; // metre cinsinden
+  damageCount: number;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  damages: RoadDamage[]; // Bu alandaki hasarlar
+  averageConfidence: number;
+  dominantDamageType: 'pothole' | 'crack' | 'surface_wear' | 'edge_damage' | 'water_damage';
 }
 
 export interface DamageReport {
@@ -59,7 +72,6 @@ export interface DamageStatistics {
   mediumCount: number;
   lowCount: number;
   mostCommonType: string;
-  estimatedTotalCost: number;
   totalRoadLength: number; // km
   damagedRoadLength: number; // km
 }

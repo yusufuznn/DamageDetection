@@ -1,4 +1,4 @@
-import { RoadDamage, DamageReport, DamageStatistics, RoadSegment } from '../types/DamageTypes';
+import { RoadDamage, DamageReport, DamageStatistics, RoadSegment, DamageHeatZone } from '../types/DamageTypes';
 
 // Mock yol hasarları verisi - Gerçek yol koordinatlarına uygun
 export const mockRoadDamages: RoadDamage[] = [
@@ -13,7 +13,6 @@ export const mockRoadDamages: RoadDamage[] = [
     description: 'Büyük çukur - Acil müdahale gerekli',
     processed: true,
     priority: 5,
-    estimatedRepairCost: 2500,
     weatherCondition: 'clear',
     trafficLevel: 'high'
   },
@@ -28,7 +27,6 @@ export const mockRoadDamages: RoadDamage[] = [
     description: 'Uzun çatlak - Genişleme riski var',
     processed: true,
     priority: 4,
-    estimatedRepairCost: 1800,
     weatherCondition: 'clear',
     trafficLevel: 'medium'
   },
@@ -43,7 +41,6 @@ export const mockRoadDamages: RoadDamage[] = [
     description: 'Asfalt aşınması - Rutin bakım gerekli',
     processed: true,
     priority: 3,
-    estimatedRepairCost: 1200,
     weatherCondition: 'clear',
     trafficLevel: 'low'
   },
@@ -58,7 +55,6 @@ export const mockRoadDamages: RoadDamage[] = [
     description: 'Kenar çöküntüsü - Orta seviye hasar',
     processed: true,
     priority: 3,
-    estimatedRepairCost: 900,
     weatherCondition: 'clear',
     trafficLevel: 'medium'
   },
@@ -73,7 +69,6 @@ export const mockRoadDamages: RoadDamage[] = [
     description: 'Su birikintisi hasarı - Düşük seviye',
     processed: false,
     priority: 2,
-    estimatedRepairCost: 600,
     weatherCondition: 'rainy',
     trafficLevel: 'low'
   },
@@ -88,7 +83,6 @@ export const mockRoadDamages: RoadDamage[] = [
     description: 'Orta boy çukur - Yüksek öncelik',
     processed: true,
     priority: 4,
-    estimatedRepairCost: 1500,
     weatherCondition: 'clear',
     trafficLevel: 'high'
   }
@@ -220,6 +214,50 @@ export const mockRoadSegments: RoadSegment[] = [
   }
 ];
 
+// Mock hasar yoğunluk alanları - Hasar sayısına göre büyüyen daireler
+export const mockDamageHeatZones: DamageHeatZone[] = [
+  {
+    id: 'zone-1',
+    center: { latitude: 41.0097, longitude: 28.9760 },
+    radius: 250, // 2 hasar - orta büyüklük
+    damageCount: 2,
+    severity: 'critical',
+    damages: [mockRoadDamages[0], mockRoadDamages[5]],
+    averageConfidence: 93,
+    dominantDamageType: 'pothole'
+  },
+  {
+    id: 'zone-2',
+    center: { latitude: 41.0075, longitude: 28.9700 },
+    radius: 200, // 2 hasar - orta büyüklük
+    damageCount: 2,
+    severity: 'high',
+    damages: [mockRoadDamages[1], mockRoadDamages[3]],
+    averageConfidence: 85,
+    dominantDamageType: 'crack'
+  },
+  {
+    id: 'zone-3',
+    center: { latitude: 41.0185, longitude: 28.9760 },
+    radius: 150, // 1 hasar - küçük
+    damageCount: 1,
+    severity: 'medium',
+    damages: [mockRoadDamages[2]],
+    averageConfidence: 78,
+    dominantDamageType: 'surface_wear'
+  },
+  {
+    id: 'zone-4',
+    center: { latitude: 41.0460, longitude: 29.0160 },
+    radius: 120, // 1 hasar - en küçük
+    damageCount: 1,
+    severity: 'low',
+    damages: [mockRoadDamages[4]],
+    averageConfidence: 71,
+    dominantDamageType: 'water_damage'
+  }
+];
+
 // Mock istatistikler
 export const mockStatistics: DamageStatistics = {
   totalDamages: 6,
@@ -232,7 +270,6 @@ export const mockStatistics: DamageStatistics = {
   mediumCount: 2,
   lowCount: 1,
   mostCommonType: 'pothole',
-  estimatedTotalCost: 8500,
   totalRoadLength: 5.2,
   damagedRoadLength: 4.7
 };

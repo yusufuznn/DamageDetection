@@ -68,13 +68,6 @@ const DamageListScreen = () => {
     });
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('tr-TR', {
-      style: 'currency',
-      currency: 'TRY'
-    }).format(amount);
-  };
-
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
       case 'critical': return 'alert-circle';
@@ -178,15 +171,6 @@ const DamageListScreen = () => {
                     Öncelik: {damage.priority}/5
                   </Paragraph>
                 </View>
-
-                {damage.estimatedRepairCost && (
-                  <View style={styles.detailRow}>
-                    <List.Icon icon="currency-try" color="#666" />
-                    <Paragraph style={styles.detailText}>
-                      Tahmini Maliyet: {formatCurrency(damage.estimatedRepairCost)}
-                    </Paragraph>
-                  </View>
-                )}
               </View>
 
               {/* Alt bilgiler */}
