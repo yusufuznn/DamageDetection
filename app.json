@@ -20,15 +20,23 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "edgeToEdgeEnabled": true
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
+    "updates": {
+      "enabled": false
+    },
     "plugins": [
+      "expo-sqlite",
       "expo-maps",
-      "expo-sqlite"
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Bu uygulama konumunuzu hasar tespiti için kullanacaktır."
+        }
+      ]
     ]
   }
 }

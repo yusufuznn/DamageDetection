@@ -5,7 +5,7 @@ export interface RoadDamage {
     longitude: number;
   };
   damageType: 'pothole' | 'crack' | 'surface_wear' | 'edge_damage' | 'water_damage';
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: 'none' | 'moderate' | 'severe'; // hasarsız, orta hasarlı, ağır hasarlı
   confidence: number; // AI güven skoru (0-100)
   detectedAt: string; // ISO tarih
   roadName?: string;
@@ -24,7 +24,7 @@ export interface RoadSegment {
     latitude: number;
     longitude: number;
   }>;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: 'none' | 'moderate' | 'severe'; // hasarsız, orta hasarlı, ağır hasarlı
   damageCount: number;
   averageConfidence: number;
   mainDamageType: 'pothole' | 'crack' | 'surface_wear' | 'edge_damage' | 'water_damage';
@@ -41,7 +41,7 @@ export interface DamageHeatZone {
   };
   radius: number; // metre cinsinden
   damageCount: number;
-  severity: 'low' | 'medium' | 'high' | 'critical';
+  severity: 'none' | 'moderate' | 'severe'; // hasarsız, orta hasarlı, ağır hasarlı
   damages: RoadDamage[]; // Bu alandaki hasarlar
   averageConfidence: number;
   dominantDamageType: 'pothole' | 'crack' | 'surface_wear' | 'edge_damage' | 'water_damage';
@@ -52,7 +52,7 @@ export interface DamageReport {
   title: string;
   area: string;
   totalDamages: number;
-  criticalDamages: number;
+  severeDamages: number; // ağır hasarlı sayısı
   averageConfidence: number;
   reportDate: string;
   damages: RoadDamage[];
@@ -67,10 +67,9 @@ export interface DamageStatistics {
   weeklyDamages: number;
   monthlyDamages: number;
   averageConfidence: number;
-  criticalCount: number;
-  highCount: number;
-  mediumCount: number;
-  lowCount: number;
+  noneCount: number; // hasarsız
+  moderateCount: number; // orta hasarlı
+  severeCount: number; // ağır hasarlı
   mostCommonType: string;
   totalRoadLength: number; // km
   damagedRoadLength: number; // km

@@ -1,23 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
-import { 
-  Card, 
-  Title, 
-  Paragraph, 
-  Surface, 
+import {
+  Card,
+  Title,
+  Text,
+  Surface,
   ProgressBar,
   Divider,
   List,
-  Button
 } from 'react-native-paper';
-import { mockStatistics, mockRoadDamages, severityColors, damageTypeNames, severityNames } from '../data/mockData';
+import { mockStatistics, mockRoadDamages, severityColors, damageTypeNames } from '../data/mockData';
 import { DamageStatistics } from '../types/DamageTypes';
 
 const { width } = Dimensions.get('window');
 
 const StatisticsScreen = () => {
-  const [stats, setStats] = useState<DamageStatistics>(mockStatistics);
-  const [selectedPeriod, setSelectedPeriod] = useState('today');
+  const [stats] = useState<DamageStatistics>(mockStatistics);
 
   const calculateDamageTypeStats = () => {
     const typeStats: { [key: string]: number } = {};
@@ -28,7 +26,7 @@ const StatisticsScreen = () => {
       type,
       name: damageTypeNames[type as keyof typeof damageTypeNames],
       count,
-      percentage: (count / mockRoadDamages.length) * 100
+      percentage: mockRoadDamages.length > 0 ? (count / mockRoadDamages.length) * 100 : 0
     }));
   };
 
@@ -40,88 +38,66 @@ const StatisticsScreen = () => {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Genel Özet */}
-      <Surface style={styles.summaryCard}>
-        <Title style={styles.sectionTitle}>Genel Durum</Title>
-        <View style={styles.summaryGrid}>
-          <View style={styles.summaryItem}>
-            <Title style={[styles.summaryNumber, { color: '#6200ea' }]}>
-              {stats.totalDamages}
-            </Title>
-            <Paragraph style={styles.summaryLabel}>Toplam Hasar</Paragraph>
-          </View>
-          <View style={styles.summaryItem}>
-            <Title style={[styles.summaryNumber, { color: '#d32f2f' }]}>
-              {stats.criticalCount}
-            </Title>
-            <Paragraph style={styles.summaryLabel}>Kritik Hasar</Paragraph>
-          </View>
-          <View style={styles.summaryItem}>
-            <Title style={[styles.summaryNumber, { color: '#4caf50' }]}>
-              %{stats.averageConfidence}
-            </Title>
-            <Paragraph style={styles.summaryLabel}>Ort. Güven</Paragraph>
-          </View>
-        </View>
-      </Surface>
+      {/* Özet Kartları */}
+      <View style={styles.summaryCards}>
+        <Surface style={[styles.summaryCard, { borderLeftColor: '#0E7490' }]}>
+          <Text style={[styles.summaryNumber, { color: '#0E7490' }]}>{stats.totalDamages}</Text>
+          <Text style={styles.summaryLabel}>Toplam Hasar</Text>
+        </Surface>
+        <Surface style={[styles.summaryCard, { borderLeftColor: '#DC2626' }]}>
+          <Text style={[styles.summaryNumber, { color: '#DC2626' }]}>{stats.severeCount}</Text>
+          <Text style={styles.summaryLabel}>Ağır Hasarlı</Text>
+        </Surface>
+      </View>
 
-      {/* Önem Seviyesi Dağılımı */}
+      <View style={styles.summaryCards}>
+        <Surface style={[styles.summaryCard, { borderLeftColor: '#EA580C' }]}>
+          <Text style={[styles.summaryNumber, { color: '#EA580C' }]}>{stats.moderateCount}</Text>
+          <Text style={styles.summaryLabel}>Orta Hasarlı</Text>
+        </Surface>
+        <Surface style={[styles.summaryCard, { borderLeftColor: '#16A34A' }]}>
+          <Text style={[styles.summaryNumber, { color: '#16A34A' }]}>{stats.noneCount}</Text>
+          <Text style={styles.summaryLabel}>Hasarsız</Text>
+        </Surface>
+      </View>
+
+      {/* Hasar Seviyesi Dağılımı */}
       <Card style={styles.card}>
         <Card.Content>
-          <Title style={styles.cardTitle}>Önem Seviyesi Dağılımı</Title>
-          
-          <View style={styles.severityItem}>
-            <View style={styles.severityHeader}>
-              <Paragraph style={styles.severityLabel}>Kritik</Paragraph>
-              <Paragraph style={styles.severityCount}>
-                {stats.criticalCount} (%{getSeverityPercentage(stats.criticalCount).toFixed(1)})
-              </Paragraph>
+          <Title style={styles.cardTitle}>Hasar Seviyesi Dağılımı</Title>
+
+          <View style={styles.barItem}>
+            <View style={styles.barHeader}>
+              <Text style={styles.barLabel}>Ağır Hasarlı</Text>
+              <Text style={styles.barValue}>{stats.severeCount}</Text>
             </View>
-            <ProgressBar 
-              progress={getSeverityPercentage(stats.criticalCount) / 100} 
-              color={severityColors.critical}
+            <ProgressBar
+              progress={getSeverityPercentage(stats.severeCount) / 100}
+              color="#DC2626"
               style={styles.progressBar}
             />
           </View>
 
-          <View style={styles.severityItem}>
-            <View style={styles.severityHeader}>
-              <Paragraph style={styles.severityLabel}>Yüksek</Paragraph>
-              <Paragraph style={styles.severityCount}>
-                {stats.highCount} (%{getSeverityPercentage(stats.highCount).toFixed(1)})
-              </Paragraph>
+          <View style={styles.barItem}>
+            <View style={styles.barHeader}>
+              <Text style={styles.barLabel}>Orta Hasarlı</Text>
+              <Text style={styles.barValue}>{stats.moderateCount}</Text>
             </View>
-            <ProgressBar 
-              progress={getSeverityPercentage(stats.highCount) / 100} 
-              color={severityColors.high}
+            <ProgressBar
+              progress={getSeverityPercentage(stats.moderateCount) / 100}
+              color="#EA580C"
               style={styles.progressBar}
             />
           </View>
 
-          <View style={styles.severityItem}>
-            <View style={styles.severityHeader}>
-              <Paragraph style={styles.severityLabel}>Orta</Paragraph>
-              <Paragraph style={styles.severityCount}>
-                {stats.mediumCount} (%{getSeverityPercentage(stats.mediumCount).toFixed(1)})
-              </Paragraph>
+          <View style={styles.barItem}>
+            <View style={styles.barHeader}>
+              <Text style={styles.barLabel}>Hasarsız</Text>
+              <Text style={styles.barValue}>{stats.noneCount}</Text>
             </View>
-            <ProgressBar 
-              progress={getSeverityPercentage(stats.mediumCount) / 100} 
-              color={severityColors.medium}
-              style={styles.progressBar}
-            />
-          </View>
-
-          <View style={styles.severityItem}>
-            <View style={styles.severityHeader}>
-              <Paragraph style={styles.severityLabel}>Düşük</Paragraph>
-              <Paragraph style={styles.severityCount}>
-                {stats.lowCount} (%{getSeverityPercentage(stats.lowCount).toFixed(1)})
-              </Paragraph>
-            </View>
-            <ProgressBar 
-              progress={getSeverityPercentage(stats.lowCount) / 100} 
-              color={severityColors.low}
+            <ProgressBar
+              progress={getSeverityPercentage(stats.noneCount) / 100}
+              color="#16A34A"
               style={styles.progressBar}
             />
           </View>
@@ -129,104 +105,69 @@ const StatisticsScreen = () => {
       </Card>
 
       {/* Hasar Tipi Dağılımı */}
-      <Card style={styles.card}>
-        <Card.Content>
-          <Title style={styles.cardTitle}>Hasar Tipi Dağılımı</Title>
-          {damageTypeStats.map((item, index) => (
-            <View key={item.type} style={styles.typeItem}>
-              <View style={styles.typeHeader}>
-                <Paragraph style={styles.typeLabel}>{item.name}</Paragraph>
-                <Paragraph style={styles.typeCount}>
-                  {item.count} (%{item.percentage.toFixed(1)})
-                </Paragraph>
+      {damageTypeStats.length > 0 && (
+        <Card style={styles.card}>
+          <Card.Content>
+            <Title style={styles.cardTitle}>Hasar Tipi Dağılımı</Title>
+            {damageTypeStats.map((item) => (
+              <View key={item.type} style={styles.barItem}>
+                <View style={styles.barHeader}>
+                  <Text style={styles.barLabel}>{item.name}</Text>
+                  <Text style={styles.barValue}>{item.count}</Text>
+                </View>
+                <ProgressBar
+                  progress={item.percentage / 100}
+                  color="#0E7490"
+                  style={styles.progressBar}
+                />
               </View>
-              <ProgressBar 
-                progress={item.percentage / 100} 
-                color="#6200ea"
-                style={styles.progressBar}
-              />
-            </View>
-          ))}
-        </Card.Content>
-      </Card>
+            ))}
+          </Card.Content>
+        </Card>
+      )}
 
-      {/* Zaman Bazlı İstatistikler */}
+      {/* Zaman Bazlı */}
       <Card style={styles.card}>
         <Card.Content>
           <Title style={styles.cardTitle}>Zaman Bazlı Analiz</Title>
-          
-          <List.Item
-            title="Bugün"
-            description={`${stats.todayDamages} yeni hasar tespit edildi`}
-            left={props => <List.Icon {...props} icon="calendar-today" />}
-            right={() => (
-              <View style={styles.timeStatValue}>
-                <Title style={styles.timeStatNumber}>{stats.todayDamages}</Title>
-              </View>
-            )}
-          />
-          
+
+          <View style={styles.timeItem}>
+            <View style={styles.timeIcon}>
+              <Text style={styles.timeEmoji}>📅</Text>
+            </View>
+            <View style={styles.timeContent}>
+              <Text style={styles.timeLabel}>Bugün</Text>
+              <Text style={styles.timeValue}>{stats.todayDamages} hasar</Text>
+            </View>
+          </View>
+
           <Divider style={styles.divider} />
-          
-          <List.Item
-            title="Bu Hafta"
-            description={`${stats.weeklyDamages} toplam hasar kaydı`}
-            left={props => <List.Icon {...props} icon="calendar-week" />}
-            right={() => (
-              <View style={styles.timeStatValue}>
-                <Title style={styles.timeStatNumber}>{stats.weeklyDamages}</Title>
-              </View>
-            )}
-          />
-          
+
+          <View style={styles.timeItem}>
+            <View style={styles.timeIcon}>
+              <Text style={styles.timeEmoji}>📆</Text>
+            </View>
+            <View style={styles.timeContent}>
+              <Text style={styles.timeLabel}>Bu Hafta</Text>
+              <Text style={styles.timeValue}>{stats.weeklyDamages} hasar</Text>
+            </View>
+          </View>
+
           <Divider style={styles.divider} />
-          
-          <List.Item
-            title="Bu Ay"
-            description={`${stats.monthlyDamages} toplam hasar kaydı`}
-            left={props => <List.Icon {...props} icon="calendar-month" />}
-            right={() => (
-              <View style={styles.timeStatValue}>
-                <Title style={styles.timeStatNumber}>{stats.monthlyDamages}</Title>
-              </View>
-            )}
-          />
+
+          <View style={styles.timeItem}>
+            <View style={styles.timeIcon}>
+              <Text style={styles.timeEmoji}>🗓️</Text>
+            </View>
+            <View style={styles.timeContent}>
+              <Text style={styles.timeLabel}>Bu Ay</Text>
+              <Text style={styles.timeValue}>{stats.monthlyDamages} hasar</Text>
+            </View>
+          </View>
         </Card.Content>
       </Card>
 
-      {/* En Yaygın Hasar Tipi */}
-      <Card style={styles.card}>
-        <Card.Content>
-          <Title style={styles.cardTitle}>Öne Çıkan Bilgiler</Title>
-          
-          <Surface style={styles.highlightCard}>
-            <View style={styles.highlightContent}>
-              <List.Icon icon="chart-pie" color="#6200ea" />
-              <View style={styles.highlightText}>
-                <Title style={styles.highlightTitle}>En Yaygın Hasar</Title>
-                <Paragraph style={styles.highlightDescription}>
-                  {damageTypeNames[stats.mostCommonType as keyof typeof damageTypeNames]}
-                </Paragraph>
-              </View>
-            </View>
-          </Surface>
-
-          <Surface style={styles.highlightCard}>
-            <View style={styles.highlightContent}>
-              <List.Icon icon="target" color="#4caf50" />
-              <View style={styles.highlightText}>
-                <Title style={styles.highlightTitle}>Ortalama Güven Skoru</Title>
-                <Paragraph style={styles.highlightDescription}>
-                  %{stats.averageConfidence} (Yüksek güvenilirlik)
-                </Paragraph>
-              </View>
-            </View>
-          </Surface>
-        </Card.Content>
-      </Card>
-
-      {/* Alt boşluk */}
-      <View style={styles.bottomSpacing} />
+      <View style={{ height: 30 }} />
     </ScrollView>
   );
 };
@@ -234,132 +175,100 @@ const StatisticsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F8FAFC',
+  },
+  summaryCards: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    gap: 12,
   },
   summaryCard: {
-    margin: 16,
-    padding: 20,
+    flex: 1,
+    padding: 16,
     borderRadius: 12,
-    elevation: 3,
-  },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  summaryGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  summaryItem: {
-    width: '48%',
+    backgroundColor: '#FFFFFF',
+    elevation: 2,
+    borderLeftWidth: 4,
     alignItems: 'center',
-    marginBottom: 16,
   },
   summaryNumber: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
   },
   summaryLabel: {
     fontSize: 12,
-    color: '#666',
+    color: '#64748B',
     marginTop: 4,
-    textAlign: 'center',
   },
   card: {
     margin: 16,
-    marginTop: 0,
-    elevation: 3,
+    marginBottom: 0,
     borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    elevation: 2,
   },
   cardTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#1E293B',
     marginBottom: 16,
   },
-  severityItem: {
+  barItem: {
     marginBottom: 16,
   },
-  severityHeader: {
+  barHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
     marginBottom: 8,
   },
-  severityLabel: {
+  barLabel: {
     fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
+    color: '#1E293B',
   },
-  severityCount: {
+  barValue: {
     fontSize: 14,
-    color: '#666',
+    fontWeight: '600',
+    color: '#64748B',
   },
   progressBar: {
     height: 8,
     borderRadius: 4,
+    backgroundColor: '#E2E8F0',
   },
-  typeItem: {
-    marginBottom: 16,
-  },
-  typeHeader: {
+  timeItem: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    paddingVertical: 8,
   },
-  typeLabel: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
-  },
-  typeCount: {
-    fontSize: 14,
-    color: '#666',
-  },
-  divider: {
-    marginVertical: 8,
-  },
-  timeStatValue: {
-    alignItems: 'center',
+  timeIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F1F5F9',
     justifyContent: 'center',
-    minWidth: 50,
-  },
-  timeStatNumber: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#6200ea',
-  },
-  highlightCard: {
-    padding: 16,
-    marginBottom: 12,
-    borderRadius: 8,
-    elevation: 1,
-  },
-  highlightContent: {
-    flexDirection: 'row',
     alignItems: 'center',
+    marginRight: 12,
   },
-  highlightText: {
-    marginLeft: 16,
+  timeEmoji: {
+    fontSize: 18,
+  },
+  timeContent: {
     flex: 1,
   },
-  highlightTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  highlightDescription: {
+  timeLabel: {
     fontSize: 14,
-    color: '#666',
-    marginTop: 4,
+    color: '#1E293B',
+    fontWeight: '500',
   },
-  bottomSpacing: {
-    height: 20,
+  timeValue: {
+    fontSize: 13,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  divider: {
+    backgroundColor: '#E2E8F0',
+    marginVertical: 4,
   },
 });
 

@@ -1,23 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, ScrollView, RefreshControl } from 'react-native';
-import { 
-  Card, 
-  Title, 
-  Paragraph, 
-  Chip, 
-  List, 
-  Searchbar, 
-  SegmentedButtons,
+import {
+  Card,
+  Title,
+  Paragraph,
+  Chip,
+  Searchbar,
   Surface,
-  Badge,
-  Button
+  Text,
+  IconButton
 } from 'react-native-paper';
-import { useNavigation } from '@react-navigation/native';
 import { RoadDamage } from '../types/DamageTypes';
 import { mockRoadDamages, damageTypeNames, severityColors, severityNames } from '../data/mockData';
 
 const DamageListScreen = () => {
-  const navigation = useNavigation();
   const [damages, setDamages] = useState<RoadDamage[]>(mockRoadDamages);
   const [filteredDamages, setFilteredDamages] = useState<RoadDamage[]>(mockRoadDamages);
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,16 +27,13 @@ const DamageListScreen = () => {
   const filterDamages = () => {
     let filtered = damages;
 
-    // Arama filtresi
     if (searchQuery) {
-      filtered = filtered.filter(damage => 
+      filtered = filtered.filter(damage =>
         damage.roadName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        damage.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        damageTypeNames[damage.damageType].toLowerCase().includes(searchQuery.toLowerCase())
+        damage.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
-    // Seviye filtresi
     if (severityFilter !== 'all') {
       filtered = filtered.filter(damage => damage.severity === severityFilter);
     }
@@ -50,7 +43,6 @@ const DamageListScreen = () => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    // Simulate API call
     setTimeout(() => {
       setDamages([...mockRoadDamages]);
       setRefreshing(false);
@@ -59,158 +51,132 @@ const DamageListScreen = () => {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString('tr-TR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000 / 60);
+
+    if (diff < 60) return `${diff} dk önce`;
+    if (diff < 1440) return `${Math.floor(diff / 60)} saat önce`;
+    return date.toLocaleDateString('tr-TR');
   };
 
   const getSeverityIcon = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'alert-circle';
-      case 'high': return 'alert';
-      case 'medium': return 'minus-circle';
-      case 'low': return 'check-circle';
+      case 'severe': return 'alert-circle';
+      case 'moderate': return 'alert';
+      case 'none': return 'check-circle';
       default: return 'help-circle';
     }
   };
 
-  const handleDamagePress = (damage: RoadDamage) => {
-    // TODO: Detay sayfasına git
-    console.log('Hasar detayı:', damage.id);
-  };
-
   return (
     <View style={styles.container}>
-      {/* Arama çubuğu */}
+      {/* Arama */}
       <Surface style={styles.searchContainer}>
         <Searchbar
-          placeholder="Yol adı, hasar tipi veya açıklama ara..."
+          placeholder="Konum veya açıklama ara..."
           onChangeText={setSearchQuery}
           value={searchQuery}
           style={styles.searchbar}
+          iconColor="#64748B"
+          placeholderTextColor="#94A3B8"
         />
       </Surface>
 
-      {/* Filtre butonları */}
-      <Surface style={styles.filterContainer}>
-        <SegmentedButtons
-          value={severityFilter}
-          onValueChange={setSeverityFilter}
-          buttons={[
-            { value: 'all', label: 'Tümü' },
-            { value: 'critical', label: 'Kritik' },
-            { value: 'high', label: 'Yüksek' },
-            { value: 'medium', label: 'Orta' },
-            { value: 'low', label: 'Düşük' }
-          ]}
-          style={styles.segmentedButtons}
-        />
-      </Surface>
+      {/* Filtreler */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.filterScrollView}
+        contentContainerStyle={styles.filterScrollContent}
+      >
+        <Chip
+          selected={severityFilter === 'all'}
+          onPress={() => setSeverityFilter('all')}
+          style={[styles.filterChip, severityFilter === 'all' && styles.filterChipActive]}
+          textStyle={severityFilter === 'all' ? styles.filterChipTextActive : styles.filterChipText}
+          mode="flat"
+        >
+          Tümü ({damages.length})
+        </Chip>
+        <Chip
+          selected={severityFilter === 'severe'}
+          onPress={() => setSeverityFilter('severe')}
+          style={[styles.filterChip, severityFilter === 'severe' && { backgroundColor: '#FEE2E2' }]}
+          textStyle={severityFilter === 'severe' ? { color: '#DC2626' } : styles.filterChipText}
+          mode="flat"
+        >
+          Ağır ({damages.filter(d => d.severity === 'severe').length})
+        </Chip>
+        <Chip
+          selected={severityFilter === 'moderate'}
+          onPress={() => setSeverityFilter('moderate')}
+          style={[styles.filterChip, severityFilter === 'moderate' && { backgroundColor: '#FFEDD5' }]}
+          textStyle={severityFilter === 'moderate' ? { color: '#EA580C' } : styles.filterChipText}
+          mode="flat"
+        >
+          Orta ({damages.filter(d => d.severity === 'moderate').length})
+        </Chip>
+        <Chip
+          selected={severityFilter === 'none'}
+          onPress={() => setSeverityFilter('none')}
+          style={[styles.filterChip, severityFilter === 'none' && { backgroundColor: '#DCFCE7' }]}
+          textStyle={severityFilter === 'none' ? { color: '#16A34A' } : styles.filterChipText}
+          mode="flat"
+        >
+          Hasarsız ({damages.filter(d => d.severity === 'none').length})
+        </Chip>
+      </ScrollView>
 
-      {/* Hasar listesi */}
-      <ScrollView 
+      {/* Hasar Listesi */}
+      <ScrollView
         style={styles.scrollView}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#0E7490']} />
         }
         showsVerticalScrollIndicator={false}
       >
         {filteredDamages.map((damage) => (
-          <Card 
-            key={damage.id} 
-            style={styles.damageCard}
-            onPress={() => handleDamagePress(damage)}
-          >
-            <Card.Content>
-              {/* Başlık ve badges */}
-              <View style={styles.cardHeader}>
-                <View style={styles.titleContainer}>
-                  <Title style={styles.roadName}>
-                    {damage.roadName || 'Bilinmeyen Yol'}
-                  </Title>
-                  <View style={styles.badgeContainer}>
-                    <Chip 
-                      icon={getSeverityIcon(damage.severity)}
-                      style={[styles.severityChip, { backgroundColor: severityColors[damage.severity] }]}
-                      textStyle={styles.chipText}
-                    >
-                      {severityNames[damage.severity]}
-                    </Chip>
-                    <Chip 
-                      icon="wrench"
-                      style={styles.typeChip}
-                      textStyle={styles.typeChipText}
-                    >
-                      {damageTypeNames[damage.damageType]}
-                    </Chip>
-                  </View>
+          <Card key={damage.id} style={styles.damageCard}>
+            <View style={styles.cardContent}>
+              {/* Sol Renk Göstergesi */}
+              <View style={[styles.severityIndicator, { backgroundColor: severityColors[damage.severity] }]} />
+
+              {/* İçerik */}
+              <View style={styles.cardBody}>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.roadName}>{damage.roadName || 'Bilinmeyen Konum'}</Text>
+                  <Chip
+                    style={[styles.severityChip, { backgroundColor: severityColors[damage.severity] }]}
+                    textStyle={styles.severityChipText}
+                  >
+                    {severityNames[damage.severity]}
+                  </Chip>
+                </View>
+
+                <Text style={styles.description} numberOfLines={2}>
+                  {damage.description}
+                </Text>
+
+                <View style={styles.cardFooter}>
+                  <Text style={styles.dateText}>🕐 {formatDate(damage.detectedAt)}</Text>
+                  <Text style={styles.typeText}>🔧 {damageTypeNames[damage.damageType]}</Text>
                 </View>
               </View>
-
-              {/* Açıklama */}
-              <Paragraph style={styles.description}>
-                {damage.description}
-              </Paragraph>
-
-              {/* Detay bilgileri */}
-              <View style={styles.detailsContainer}>
-                <View style={styles.detailRow}>
-                  <List.Icon icon="target" color="#666" />
-                  <Paragraph style={styles.detailText}>
-                    Güven: %{damage.confidence}
-                  </Paragraph>
-                </View>
-                
-                <View style={styles.detailRow}>
-                  <List.Icon icon="priority-high" color="#666" />
-                  <Paragraph style={styles.detailText}>
-                    Öncelik: {damage.priority}/5
-                  </Paragraph>
-                </View>
-              </View>
-
-              {/* Alt bilgiler */}
-              <View style={styles.footerContainer}>
-                <Paragraph style={styles.dateText}>
-                  {formatDate(damage.detectedAt)}
-                </Paragraph>
-                <View style={styles.statusContainer}>
-                  {damage.processed ? (
-                    <Badge style={styles.processedBadge}>İşlendi</Badge>
-                  ) : (
-                    <Badge style={styles.pendingBadge}>Bekliyor</Badge>
-                  )}
-                </View>
-              </View>
-            </Card.Content>
+            </View>
           </Card>
         ))}
 
         {filteredDamages.length === 0 && (
-          <Card style={styles.emptyCard}>
-            <Card.Content style={styles.emptyContent}>
-              <List.Icon icon="database-search" color="#ccc" />
-              <Title style={styles.emptyTitle}>Hasar bulunamadı</Title>
-              <Paragraph style={styles.emptyText}>
-                Arama kriterlerinize uygun hasar kaydı bulunmuyor.
-              </Paragraph>
-              <Button 
-                mode="outlined" 
-                onPress={() => {
-                  setSearchQuery('');
-                  setSeverityFilter('all');
-                }}
-                style={styles.clearButton}
-              >
-                Filtreleri Temizle
-              </Button>
-            </Card.Content>
-          </Card>
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyIcon}>📍</Text>
+            <Text style={styles.emptyTitle}>Hasar Kaydı Yok</Text>
+            <Text style={styles.emptyText}>
+              Henüz kayıtlı hasar bulunmuyor veya arama kriterlerinize uygun sonuç yok.
+            </Text>
+          </View>
         )}
+
+        <View style={{ height: 20 }} />
       </ScrollView>
     </View>
   );
@@ -219,26 +185,41 @@ const DamageListScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F8FAFC',
   },
   searchContainer: {
     margin: 16,
     marginBottom: 8,
     borderRadius: 12,
     elevation: 2,
+    backgroundColor: '#FFFFFF',
   },
   searchbar: {
-    backgroundColor: 'white',
+    backgroundColor: '#FFFFFF',
+    elevation: 0,
   },
-  filterContainer: {
+  filterScrollView: {
+    maxHeight: 45,
     marginHorizontal: 16,
     marginBottom: 8,
-    borderRadius: 12,
-    elevation: 1,
   },
-  segmentedButtons: {
-    backgroundColor: 'white',
-    padding: 8,
+  filterScrollContent: {
+    gap: 8,
+  },
+  filterChip: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+  },
+  filterChipActive: {
+    backgroundColor: '#E0F2FE',
+  },
+  filterChipText: {
+    color: '#64748B',
+    fontSize: 13,
+  },
+  filterChipTextActive: {
+    color: '#0E7490',
+    fontWeight: '600',
   },
   scrollView: {
     flex: 1,
@@ -246,104 +227,80 @@ const styles = StyleSheet.create({
   },
   damageCard: {
     marginBottom: 12,
-    elevation: 3,
     borderRadius: 12,
+    backgroundColor: '#FFFFFF',
+    elevation: 2,
+    overflow: 'hidden',
+  },
+  cardContent: {
+    flexDirection: 'row',
+  },
+  severityIndicator: {
+    width: 5,
+  },
+  cardBody: {
+    flex: 1,
+    padding: 16,
   },
   cardHeader: {
-    marginBottom: 12,
-  },
-  titleContainer: {
-    flex: 1,
-  },
-  roadName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: 8,
   },
-  badgeContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+  roadName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1E293B',
+    flex: 1,
+    marginRight: 8,
   },
   severityChip: {
-    elevation: 1,
+    height: 24,
   },
-  chipText: {
-    color: 'white',
+  severityChipText: {
+    color: '#FFFFFF',
+    fontSize: 11,
     fontWeight: 'bold',
-    fontSize: 12,
-  },
-  typeChip: {
-    backgroundColor: '#e3f2fd',
-  },
-  typeChipText: {
-    color: '#1976d2',
-    fontSize: 12,
   },
   description: {
     fontSize: 14,
-    color: '#666',
+    color: '#64748B',
     marginBottom: 12,
     lineHeight: 20,
   },
-  detailsContainer: {
-    marginBottom: 12,
-  },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
-  detailText: {
-    fontSize: 13,
-    color: '#666',
-    marginLeft: 8,
-  },
-  footerContainer: {
+  cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
   },
   dateText: {
     fontSize: 12,
-    color: '#999',
+    color: '#94A3B8',
   },
-  statusContainer: {
-    flexDirection: 'row',
+  typeText: {
+    fontSize: 12,
+    color: '#94A3B8',
+  },
+  emptyContainer: {
     alignItems: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 40,
   },
-  processedBadge: {
-    backgroundColor: '#4caf50',
-    color: 'white',
-  },
-  pendingBadge: {
-    backgroundColor: '#ff9800',
-    color: 'white',
-  },
-  emptyCard: {
-    marginTop: 40,
-    elevation: 1,
-  },
-  emptyContent: {
-    alignItems: 'center',
-    padding: 40,
+  emptyIcon: {
+    fontSize: 48,
+    marginBottom: 16,
   },
   emptyTitle: {
-    marginTop: 16,
-    color: '#666',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#1E293B',
+    marginBottom: 8,
   },
   emptyText: {
+    fontSize: 14,
+    color: '#64748B',
     textAlign: 'center',
-    color: '#999',
-    marginTop: 8,
-  },
-  clearButton: {
-    marginTop: 16,
+    lineHeight: 22,
   },
 });
 

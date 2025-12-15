@@ -87,8 +87,8 @@ const HomeScreen = () => {
               <Paragraph style={styles.statLabel}>Bugün</Paragraph>
             </View>
             <View style={styles.statItem}>
-              <Title style={styles.statNumber}>{mockStatistics.criticalCount}</Title>
-              <Paragraph style={styles.statLabel}>Kritik</Paragraph>
+              <Title style={styles.statNumber}>{mockStatistics.severeCount}</Title>
+              <Paragraph style={styles.statLabel}>Ağır Hasarlı</Paragraph>
             </View>
           </View>
         </Surface>

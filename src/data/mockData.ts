@@ -1,260 +1,120 @@
 import { RoadDamage, DamageReport, DamageStatistics, RoadSegment, DamageHeatZone } from '../types/DamageTypes';
 
-// Mock yol hasarları verisi - Gerçek yol koordinatlarına uygun
+// Kırıkkale Üniversitesi civarı mock hasarlar
 export const mockRoadDamages: RoadDamage[] = [
   {
     id: '1',
-    coordinate: { latitude: 41.0095, longitude: 28.9740 }, // Atatürk Caddesi üzerinde
+    coordinate: { latitude: 39.8355, longitude: 33.5195 }, // Üniversite ana giriş
     damageType: 'pothole',
-    severity: 'critical',
+    severity: 'severe',
     confidence: 95,
-    detectedAt: '2025-10-06T09:30:00Z',
-    roadName: 'Atatürk Caddesi',
+    detectedAt: '2025-12-15T09:30:00Z',
+    roadName: 'Kırıkkale Üniversitesi Ana Yol',
     description: 'Büyük çukur - Acil müdahale gerekli',
-    processed: true,
+    processed: false,
     priority: 5,
     weatherCondition: 'clear',
     trafficLevel: 'high'
   },
   {
     id: '2',
-    coordinate: { latitude: 41.0070, longitude: 28.9690 }, // İnönü Bulvarı üzerinde
+    coordinate: { latitude: 39.8342, longitude: 33.5210 }, // Mühendislik Fakültesi civarı
     damageType: 'crack',
-    severity: 'high',
+    severity: 'moderate',
     confidence: 88,
-    detectedAt: '2025-10-06T10:15:00Z',
-    roadName: 'İnönü Bulvarı',
-    description: 'Uzun çatlak - Genişleme riski var',
-    processed: true,
-    priority: 4,
+    detectedAt: '2025-12-15T10:15:00Z',
+    roadName: 'Mühendislik Fakültesi Yolu',
+    description: 'Asfalt çatlağı - Onarım gerekiyor',
+    processed: false,
+    priority: 3,
     weatherCondition: 'clear',
     trafficLevel: 'medium'
   },
   {
     id: '3',
-    coordinate: { latitude: 41.0185, longitude: 28.9760 }, // Galata Köprüsü bağlantısında
+    coordinate: { latitude: 39.8368, longitude: 33.5175 }, // Rektörlük binası civarı
     damageType: 'surface_wear',
-    severity: 'medium',
+    severity: 'none',
     confidence: 78,
-    detectedAt: '2025-10-06T08:45:00Z',
-    roadName: 'Galata Köprüsü - Eminönü Bağlantısı',
-    description: 'Asfalt aşınması - Rutin bakım gerekli',
+    detectedAt: '2025-12-15T08:45:00Z',
+    roadName: 'Rektörlük Binası Önü',
+    description: 'Hafif aşınma - Rutin kontrol yapıldı',
     processed: true,
-    priority: 3,
+    priority: 1,
     weatherCondition: 'clear',
     trafficLevel: 'low'
   },
   {
     id: '4',
-    coordinate: { latitude: 41.0080, longitude: 28.9710 }, // İnönü Bulvarı üzerinde
+    coordinate: { latitude: 39.8330, longitude: 33.5165 }, // Kütüphane civarı
     damageType: 'edge_damage',
-    severity: 'medium',
+    severity: 'moderate',
     confidence: 82,
-    detectedAt: '2025-10-06T11:20:00Z',
-    roadName: 'İnönü Bulvarı',
+    detectedAt: '2025-12-15T11:20:00Z',
+    roadName: 'Merkez Kütüphane Yolu',
     description: 'Kenar çöküntüsü - Orta seviye hasar',
-    processed: true,
+    processed: false,
     priority: 3,
     weatherCondition: 'clear',
     trafficLevel: 'medium'
   },
   {
     id: '5',
-    coordinate: { latitude: 41.0460, longitude: 29.0160 }, // Barbaros Bulvarı üzerinde
-    damageType: 'water_damage',
-    severity: 'low',
-    confidence: 71,
-    detectedAt: '2025-10-06T07:30:00Z',
-    roadName: 'Barbaros Bulvarı',
-    description: 'Su birikintisi hasarı - Düşük seviye',
+    coordinate: { latitude: 39.8380, longitude: 33.5220 }, // Yurt bölgesi
+    damageType: 'pothole',
+    severity: 'severe',
+    confidence: 91,
+    detectedAt: '2025-12-15T12:45:00Z',
+    roadName: 'Öğrenci Yurtları Yolu',
+    description: 'Derin çukur - Araç hasarı riski',
     processed: false,
-    priority: 2,
-    weatherCondition: 'rainy',
-    trafficLevel: 'low'
+    priority: 5,
+    weatherCondition: 'clear',
+    trafficLevel: 'high'
   },
   {
     id: '6',
-    coordinate: { latitude: 41.0105, longitude: 28.9780 }, // Atatürk Caddesi üzerinde
-    damageType: 'pothole',
-    severity: 'high',
-    confidence: 91,
-    detectedAt: '2025-10-06T12:45:00Z',
-    roadName: 'Atatürk Caddesi',
-    description: 'Orta boy çukur - Yüksek öncelik',
-    processed: true,
-    priority: 4,
-    weatherCondition: 'clear',
-    trafficLevel: 'high'
+    coordinate: { latitude: 39.8315, longitude: 33.5200 }, // Spor tesisleri
+    damageType: 'water_damage',
+    severity: 'moderate',
+    confidence: 75,
+    detectedAt: '2025-12-15T07:30:00Z',
+    roadName: 'Spor Kompleksi Girişi',
+    description: 'Su birikintisi hasarı - Drenaj sorunu',
+    processed: false,
+    priority: 3,
+    weatherCondition: 'rainy',
+    trafficLevel: 'low'
   }
 ];
 
 // Mock raporlar
-export const mockDamageReports: DamageReport[] = [
-  {
-    id: 'report-1',
-    title: 'Merkez İlçe Hasar Raporu',
-    area: 'Merkez',
-    totalDamages: 4,
-    criticalDamages: 1,
-    averageConfidence: 86,
-    reportDate: '2025-10-06',
-    damages: mockRoadDamages.slice(0, 4),
-    roadSegments: [], // Boş array, gerekirse doldurulabilir
-    status: 'in_progress',
-    assignedTeam: 'Ekip A'
-  },
-  {
-    id: 'report-2',
-    title: 'Güney Bölge Hasar Raporu',
-    area: 'Güney Bölge',
-    totalDamages: 2,
-    criticalDamages: 0,
-    averageConfidence: 77,
-    reportDate: '2025-10-06',
-    damages: mockRoadDamages.slice(4, 6),
-    roadSegments: [], // Boş array, gerekirse doldurulabilir
-    status: 'pending',
-    assignedTeam: undefined
-  }
-];
+export const mockDamageReports: DamageReport[] = [];
 
-// Mock yol segmentleri - İstanbul gerçek yol koordinatları
-export const mockRoadSegments: RoadSegment[] = [
-  {
-    id: 'seg-1',
-    roadName: 'Atatürk Caddesi',
-    coordinates: [
-      { latitude: 41.0085, longitude: 28.9700 },
-      { latitude: 41.0090, longitude: 28.9720 },
-      { latitude: 41.0095, longitude: 28.9740 },
-      { latitude: 41.0100, longitude: 28.9760 },
-      { latitude: 41.0105, longitude: 28.9780 },
-      { latitude: 41.0110, longitude: 28.9800 }
-    ],
-    severity: 'critical',
-    damageCount: 3,
-    averageConfidence: 92,
-    mainDamageType: 'pothole',
-    totalLength: 1.2,
-    lastUpdated: '2025-10-06T09:30:00Z',
-    damages: [mockRoadDamages[0], mockRoadDamages[5]]
-  },
-  {
-    id: 'seg-2',
-    roadName: 'İnönü Bulvarı',
-    coordinates: [
-      { latitude: 41.0050, longitude: 28.9650 },
-      { latitude: 41.0060, longitude: 28.9670 },
-      { latitude: 41.0070, longitude: 28.9690 },
-      { latitude: 41.0080, longitude: 28.9710 },
-      { latitude: 41.0090, longitude: 28.9730 }
-    ],
-    severity: 'high',
-    damageCount: 2,
-    averageConfidence: 85,
-    mainDamageType: 'crack',
-    totalLength: 1.8,
-    lastUpdated: '2025-10-06T10:15:00Z',
-    damages: [mockRoadDamages[1], mockRoadDamages[3]]
-  },
-  {
-    id: 'seg-3',
-    roadName: 'Kennedy Caddesi (Sahil Yolu)',
-    coordinates: [
-      { latitude: 40.9950, longitude: 28.9500 },
-      { latitude: 40.9960, longitude: 28.9520 },
-      { latitude: 40.9970, longitude: 28.9540 },
-      { latitude: 40.9980, longitude: 28.9560 },
-      { latitude: 40.9990, longitude: 28.9580 },
-      { latitude: 41.0000, longitude: 28.9600 },
-      { latitude: 41.0010, longitude: 28.9620 }
-    ],
-    severity: 'medium',
-    damageCount: 2,
-    averageConfidence: 80,
-    mainDamageType: 'edge_damage',
-    totalLength: 2.5,
-    lastUpdated: '2025-10-06T11:20:00Z',
-    damages: []
-  },
-  {
-    id: 'seg-4',
-    roadName: 'Galata Köprüsü - Eminönü Bağlantısı',
-    coordinates: [
-      { latitude: 41.0175, longitude: 28.9740 },
-      { latitude: 41.0180, longitude: 28.9750 },
-      { latitude: 41.0185, longitude: 28.9760 },
-      { latitude: 41.0190, longitude: 28.9770 }
-    ],
-    severity: 'high',
-    damageCount: 1,
-    averageConfidence: 88,
-    mainDamageType: 'surface_wear',
-    totalLength: 0.7,
-    lastUpdated: '2025-10-06T08:45:00Z',
-    damages: [mockRoadDamages[2]]
-  },
-  {
-    id: 'seg-5',
-    roadName: 'Barbaros Bulvarı',
-    coordinates: [
-      { latitude: 41.0400, longitude: 29.0100 },
-      { latitude: 41.0420, longitude: 29.0120 },
-      { latitude: 41.0440, longitude: 29.0140 },
-      { latitude: 41.0460, longitude: 29.0160 },
-      { latitude: 41.0480, longitude: 29.0180 }
-    ],
-    severity: 'low',
-    damageCount: 1,
-    averageConfidence: 71,
-    mainDamageType: 'water_damage',
-    totalLength: 1.4,
-    lastUpdated: '2025-10-06T07:30:00Z',
-    damages: [mockRoadDamages[4]]
-  }
-];
+// Mock yol segmentleri
+export const mockRoadSegments: RoadSegment[] = [];
 
-// Mock hasar yoğunluk alanları - Hasar sayısına göre büyüyen daireler
+// Mock hasar yoğunluk alanları
 export const mockDamageHeatZones: DamageHeatZone[] = [
   {
     id: 'zone-1',
-    center: { latitude: 41.0097, longitude: 28.9760 },
-    radius: 250, // 2 hasar - orta büyüklük
+    center: { latitude: 39.8355, longitude: 33.5195 },
+    radius: 150,
     damageCount: 2,
-    severity: 'critical',
-    damages: [mockRoadDamages[0], mockRoadDamages[5]],
+    severity: 'severe',
+    damages: [mockRoadDamages[0], mockRoadDamages[4]],
     averageConfidence: 93,
     dominantDamageType: 'pothole'
   },
   {
     id: 'zone-2',
-    center: { latitude: 41.0075, longitude: 28.9700 },
-    radius: 200, // 2 hasar - orta büyüklük
+    center: { latitude: 39.8340, longitude: 33.5190 },
+    radius: 120,
     damageCount: 2,
-    severity: 'high',
+    severity: 'moderate',
     damages: [mockRoadDamages[1], mockRoadDamages[3]],
     averageConfidence: 85,
     dominantDamageType: 'crack'
-  },
-  {
-    id: 'zone-3',
-    center: { latitude: 41.0185, longitude: 28.9760 },
-    radius: 150, // 1 hasar - küçük
-    damageCount: 1,
-    severity: 'medium',
-    damages: [mockRoadDamages[2]],
-    averageConfidence: 78,
-    dominantDamageType: 'surface_wear'
-  },
-  {
-    id: 'zone-4',
-    center: { latitude: 41.0460, longitude: 29.0160 },
-    radius: 120, // 1 hasar - en küçük
-    damageCount: 1,
-    severity: 'low',
-    damages: [mockRoadDamages[4]],
-    averageConfidence: 71,
-    dominantDamageType: 'water_damage'
   }
 ];
 
@@ -262,16 +122,15 @@ export const mockDamageHeatZones: DamageHeatZone[] = [
 export const mockStatistics: DamageStatistics = {
   totalDamages: 6,
   todayDamages: 6,
-  weeklyDamages: 23,
-  monthlyDamages: 89,
-  averageConfidence: 84,
-  criticalCount: 1,
-  highCount: 2,
-  mediumCount: 2,
-  lowCount: 1,
+  weeklyDamages: 15,
+  monthlyDamages: 42,
+  averageConfidence: 85,
+  noneCount: 1,
+  moderateCount: 3,
+  severeCount: 2,
   mostCommonType: 'pothole',
-  totalRoadLength: 5.2,
-  damagedRoadLength: 4.7
+  totalRoadLength: 3.5,
+  damagedRoadLength: 2.8
 };
 
 // Hasar tipi için Türkçe isimler
@@ -285,16 +144,14 @@ export const damageTypeNames = {
 
 // Hasar seviyesi için renkler
 export const severityColors = {
-  critical: '#d32f2f',
-  high: '#f57c00',
-  medium: '#fbc02d',
-  low: '#388e3c'
+  none: '#388e3c', // Yeşil - Hasarsız
+  moderate: '#f57c00', // Turuncu - Orta Hasarlı
+  severe: '#d32f2f' // Kırmızı - Ağır Hasarlı
 };
 
 // Hasar seviyesi için Türkçe isimler
 export const severityNames = {
-  critical: 'Kritik',
-  high: 'Yüksek',
-  medium: 'Orta',
-  low: 'Düşük'
+  none: 'Hasarsız',
+  moderate: 'Orta Hasarlı',
+  severe: 'Ağır Hasarlı'
 };
