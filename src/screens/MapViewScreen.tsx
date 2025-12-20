@@ -1,32 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Alert, Dimensions, StatusBar, Modal, Image, ScrollView } from 'react-native';
-import { FAB, Card, Title, Paragraph, Portal, Dialog, Button, Chip, Text, Surface, TextInput, SegmentedButtons } from 'react-native-paper';
+import { View, StyleSheet, Alert, Dimensions, StatusBar, ActivityIndicator } from 'react-native';
+import { FAB, Title, Paragraph, Portal, Dialog, Button, Text, Surface } from 'react-native-paper';
 import MapView, { Marker, Region, Circle } from 'react-native-maps';
 import * as Location from 'expo-location';
-import * as ImagePicker from 'expo-image-picker';
 import { RoadDamage, DamageHeatZone } from '../types/DamageTypes';
 import { mockRoadDamages, mockDamageHeatZones, severityColors, damageTypeNames, severityNames } from '../data/mockData';
+import { fetchDamages, fetchHeatZones } from '../services/aiService';
 
 const { width, height } = Dimensions.get('window');
 
 const MapViewScreen = () => {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [heatZones, setHeatZones] = useState<DamageHeatZone[]>([]);
-  const [damages, setDamages] = useState<RoadDamage[]>(mockRoadDamages);
+  const [damages, setDamages] = useState<RoadDamage[]>([]);
   const [selectedDamage, setSelectedDamage] = useState<RoadDamage | null>(null);
   const [dialogVisible, setDialogVisible] = useState(false);
-  const [addModalVisible, setAddModalVisible] = useState(false);
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
-  const [newDamage, setNewDamage] = useState({
-    description: '',
-    severity: 'moderate' as 'none' | 'moderate' | 'severe',
-    damageType: 'pothole' as 'pothole' | 'crack' | 'surface_wear' | 'edge_damage' | 'water_damage',
-  });
+  const [loading, setLoading] = useState(true);
   const [mapRegion, setMapRegion] = useState<Region>({
-    latitude: 39.8350,
-    longitude: 33.5190,
-    latitudeDelta: 0.015,
-    longitudeDelta: 0.015,
+    latitude: 39.881697,
+    longitude: 33.443401,
+    latitudeDelta: 0.008,
+    longitudeDelta: 0.008,
   });
 
   useEffect(() => {
@@ -55,9 +49,23 @@ const MapViewScreen = () => {
     }
   };
 
-  const loadDamages = () => {
-    setDamages(mockRoadDamages);
-    setHeatZones(mockDamageHeatZones);
+  const loadDamages = async () => {
+    setLoading(true);
+    try {
+      const [damageData, zoneData] = await Promise.all([
+        fetchDamages(mockRoadDamages),
+        fetchHeatZones(mockDamageHeatZones)
+      ]);
+      setDamages(damageData);
+      setHeatZones(zoneData);
+    } catch (error) {
+      console.error('Veri yükleme hatası:', error);
+      // Hata durumunda mock data kullan
+      setDamages(mockRoadDamages);
+      setHeatZones(mockDamageHeatZones);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getMarkerColor = (severity: string) => {
@@ -78,81 +86,6 @@ const MapViewScreen = () => {
         longitudeDelta: 0.01,
       });
     }
-  };
-
-  const openCamera = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Kamera İzni', 'Fotoğraf çekmek için kamera iznine ihtiyacımız var.');
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      mediaTypes: ['images'],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0]) {
-      setCapturedImage(result.assets[0].uri);
-      setAddModalVisible(true);
-    }
-  };
-
-  const openManualForm = () => {
-    setCapturedImage(null);
-    setAddModalVisible(true);
-  };
-
-  const addNewDamageReport = () => {
-    Alert.alert(
-      'Yeni Hasar Ekle',
-      'Fotoğraf çekerek veya manuel olarak hasar kaydı oluşturabilirsiniz.',
-      [
-        { text: 'İptal', style: 'cancel' },
-        { text: 'Fotoğraf Çek', onPress: openCamera },
-        { text: 'Manuel Ekle', onPress: openManualForm },
-      ]
-    );
-  };
-
-  const saveDamage = async () => {
-    if (!location) {
-      Alert.alert('Hata', 'Konum bilgisi alınamadı. Lütfen konum izni verin.');
-      return;
-    }
-
-    if (!newDamage.description.trim()) {
-      Alert.alert('Hata', 'Lütfen hasar açıklaması girin.');
-      return;
-    }
-
-    const damage: RoadDamage = {
-      id: Date.now().toString(),
-      coordinate: {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      },
-      damageType: newDamage.damageType,
-      severity: newDamage.severity,
-      confidence: 100,
-      detectedAt: new Date().toISOString(),
-      roadName: 'Mevcut Konum',
-      description: newDamage.description,
-      imageUrl: capturedImage || undefined,
-      processed: false,
-      priority: newDamage.severity === 'severe' ? 5 : newDamage.severity === 'moderate' ? 3 : 1,
-    };
-
-    setDamages([...damages, damage]);
-    setAddModalVisible(false);
-    setCapturedImage(null);
-    setNewDamage({
-      description: '',
-      severity: 'moderate',
-      damageType: 'pothole',
-    });
-
-    Alert.alert('Başarılı', 'Hasar kaydı eklendi!');
   };
 
   const formatDate = (dateString: string) => {
@@ -183,9 +116,15 @@ const MapViewScreen = () => {
             key={damage.id}
             coordinate={damage.coordinate}
             onPress={() => handleMarkerPress(damage)}
+            anchor={{ x: 0.5, y: 0.5 }}
           >
-            <View style={[styles.markerContainer, { borderColor: getMarkerColor(damage.severity) }]}>
-              <View style={[styles.markerDot, { backgroundColor: getMarkerColor(damage.severity) }]} />
+            <View style={styles.markerWrapper}>
+              <View style={[styles.markerOuter, { backgroundColor: getMarkerColor(damage.severity) + '30' }]}>
+                <View style={[styles.markerInner, { backgroundColor: getMarkerColor(damage.severity) }]}>
+                  <View style={styles.markerCore} />
+                </View>
+              </View>
+              <View style={[styles.markerShadow, { backgroundColor: getMarkerColor(damage.severity) }]} />
             </View>
           </Marker>
         ))}
@@ -236,139 +175,6 @@ const MapViewScreen = () => {
         color="#0E7490"
         onPress={centerOnUserLocation}
       />
-
-      {/* Yeni Hasar Ekle Butonu */}
-      <FAB
-        style={styles.addFab}
-        icon="plus"
-        label="Hasar Ekle"
-        onPress={addNewDamageReport}
-        color="#FFFFFF"
-      />
-
-      {/* Hasar Ekleme Modal */}
-      <Modal
-        visible={addModalVisible}
-        animationType="slide"
-        transparent={false}
-        onRequestClose={() => setAddModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Title style={styles.modalTitle}>Yeni Hasar Ekle</Title>
-            <Button onPress={() => setAddModalVisible(false)} textColor="#64748B">İptal</Button>
-          </View>
-
-          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
-            {/* Fotoğraf Önizleme */}
-            {capturedImage && (
-              <View style={styles.imagePreviewContainer}>
-                <Image source={{ uri: capturedImage }} style={styles.imagePreview} />
-                <Button
-                  mode="outlined"
-                  onPress={openCamera}
-                  style={styles.retakeButton}
-                  icon="camera"
-                >
-                  Yeniden Çek
-                </Button>
-              </View>
-            )}
-
-            {!capturedImage && (
-              <Surface style={styles.noImageContainer}>
-                <Text style={styles.noImageIcon}>📷</Text>
-                <Text style={styles.noImageText}>Fotoğraf çekilmedi</Text>
-                <Button mode="outlined" onPress={openCamera} icon="camera">
-                  Fotoğraf Çek
-                </Button>
-              </Surface>
-            )}
-
-            {/* Konum Bilgisi */}
-            <Surface style={styles.locationInfo}>
-              <Text style={styles.locationLabel}>📍 Mevcut Konum</Text>
-              {location ? (
-                <Text style={styles.locationCoords}>
-                  {location.coords.latitude.toFixed(5)}, {location.coords.longitude.toFixed(5)}
-                </Text>
-              ) : (
-                <Text style={styles.locationCoords}>Konum alınıyor...</Text>
-              )}
-            </Surface>
-
-            {/* Hasar Seviyesi */}
-            <Text style={styles.fieldLabel}>Hasar Seviyesi</Text>
-            <View style={styles.severityButtons}>
-              <Chip
-                selected={newDamage.severity === 'severe'}
-                onPress={() => setNewDamage({ ...newDamage, severity: 'severe' })}
-                style={[styles.severityChip, newDamage.severity === 'severe' && { backgroundColor: '#FEE2E2' }]}
-                textStyle={newDamage.severity === 'severe' ? { color: '#DC2626', fontWeight: 'bold' } : { color: '#64748B' }}
-              >
-                🔴 Ağır Hasarlı
-              </Chip>
-              <Chip
-                selected={newDamage.severity === 'moderate'}
-                onPress={() => setNewDamage({ ...newDamage, severity: 'moderate' })}
-                style={[styles.severityChip, newDamage.severity === 'moderate' && { backgroundColor: '#FFEDD5' }]}
-                textStyle={newDamage.severity === 'moderate' ? { color: '#EA580C', fontWeight: 'bold' } : { color: '#64748B' }}
-              >
-                🟠 Orta Hasarlı
-              </Chip>
-              <Chip
-                selected={newDamage.severity === 'none'}
-                onPress={() => setNewDamage({ ...newDamage, severity: 'none' })}
-                style={[styles.severityChip, newDamage.severity === 'none' && { backgroundColor: '#DCFCE7' }]}
-                textStyle={newDamage.severity === 'none' ? { color: '#16A34A', fontWeight: 'bold' } : { color: '#64748B' }}
-              >
-                🟢 Hasarsız
-              </Chip>
-            </View>
-
-            {/* Hasar Tipi */}
-            <Text style={styles.fieldLabel}>Hasar Tipi</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.typeScroll}>
-              {Object.entries(damageTypeNames).map(([key, name]) => (
-                <Chip
-                  key={key}
-                  selected={newDamage.damageType === key}
-                  onPress={() => setNewDamage({ ...newDamage, damageType: key as any })}
-                  style={[styles.typeChip, newDamage.damageType === key && { backgroundColor: '#E0F2FE' }]}
-                  textStyle={newDamage.damageType === key ? { color: '#0E7490', fontWeight: 'bold' } : { color: '#64748B' }}
-                >
-                  {name}
-                </Chip>
-              ))}
-            </ScrollView>
-
-            {/* Açıklama */}
-            <Text style={styles.fieldLabel}>Açıklama</Text>
-            <TextInput
-              mode="outlined"
-              placeholder="Hasar hakkında detay yazın..."
-              value={newDamage.description}
-              onChangeText={(text) => setNewDamage({ ...newDamage, description: text })}
-              multiline
-              numberOfLines={3}
-              style={styles.descriptionInput}
-              outlineColor="#E2E8F0"
-              activeOutlineColor="#0E7490"
-            />
-
-            {/* Kaydet Butonu */}
-            <Button
-              mode="contained"
-              onPress={saveDamage}
-              style={styles.saveButton}
-              buttonColor="#0E7490"
-              icon="check"
-            >
-              Hasar Kaydını Kaydet
-            </Button>
-          </ScrollView>
-        </View>
-      </Modal>
 
       {/* Hasar Detay Dialog */}
       <Portal>
@@ -463,36 +269,47 @@ const styles = StyleSheet.create({
     height: 30,
     backgroundColor: '#E2E8F0',
   },
-  markerContainer: {
+  markerWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  markerOuter: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  markerInner: {
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 3,
-    justifyContent: 'center',
     alignItems: 'center',
-    elevation: 4,
+    justifyContent: 'center',
+    elevation: 6,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
     shadowRadius: 4,
   },
-  markerDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+  markerCore: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+  },
+  markerShadow: {
+    width: 12,
+    height: 4,
+    borderRadius: 6,
+    marginTop: 2,
+    opacity: 0.3,
   },
   locationFab: {
     position: 'absolute',
     right: 16,
     top: 130,
     backgroundColor: '#FFFFFF',
-  },
-  addFab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 90,
-    backgroundColor: '#0E7490',
   },
   dialog: {
     backgroundColor: '#FFFFFF',
@@ -527,105 +344,6 @@ const styles = StyleSheet.create({
   dialogInfoText: {
     color: '#64748B',
     fontSize: 13,
-  },
-  // Modal Styles
-  modalContainer: {
-    flex: 1,
-    backgroundColor: '#F8FAFC',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
-    backgroundColor: '#FFFFFF',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1E293B',
-  },
-  modalContent: {
-    flex: 1,
-    padding: 16,
-  },
-  imagePreviewContainer: {
-    marginBottom: 16,
-  },
-  imagePreview: {
-    width: '100%',
-    height: 200,
-    borderRadius: 12,
-    marginBottom: 8,
-  },
-  retakeButton: {
-    borderColor: '#0E7490',
-  },
-  noImageContainer: {
-    padding: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 16,
-    backgroundColor: '#FFFFFF',
-  },
-  noImageIcon: {
-    fontSize: 40,
-    marginBottom: 8,
-  },
-  noImageText: {
-    color: '#64748B',
-    marginBottom: 16,
-  },
-  locationInfo: {
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    backgroundColor: '#FFFFFF',
-  },
-  locationLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1E293B',
-    marginBottom: 4,
-  },
-  locationCoords: {
-    fontSize: 13,
-    color: '#64748B',
-  },
-  fieldLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1E293B',
-    marginBottom: 8,
-    marginTop: 8,
-  },
-  severityButtons: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 8,
-  },
-  severityChip: {
-    backgroundColor: '#FFFFFF',
-  },
-  typeScroll: {
-    marginBottom: 8,
-  },
-  typeChip: {
-    marginRight: 8,
-    backgroundColor: '#FFFFFF',
-  },
-  descriptionInput: {
-    backgroundColor: '#FFFFFF',
-    marginBottom: 16,
-  },
-  saveButton: {
-    marginTop: 8,
-    marginBottom: 40,
-    paddingVertical: 8,
-    borderRadius: 12,
   },
 });
 

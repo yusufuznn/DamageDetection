@@ -12,17 +12,36 @@ import {
 } from 'react-native-paper';
 import { RoadDamage } from '../types/DamageTypes';
 import { mockRoadDamages, damageTypeNames, severityColors, severityNames } from '../data/mockData';
+import { fetchDamages } from '../services/aiService';
 
 const DamageListScreen = () => {
-  const [damages, setDamages] = useState<RoadDamage[]>(mockRoadDamages);
-  const [filteredDamages, setFilteredDamages] = useState<RoadDamage[]>(mockRoadDamages);
+  const [damages, setDamages] = useState<RoadDamage[]>([]);
+  const [filteredDamages, setFilteredDamages] = useState<RoadDamage[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [severityFilter, setSeverityFilter] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadDamages();
+  }, []);
 
   useEffect(() => {
     filterDamages();
   }, [searchQuery, severityFilter, damages]);
+
+  const loadDamages = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchDamages(mockRoadDamages);
+      setDamages(data);
+    } catch (error) {
+      console.error('Veri yükleme hatası:', error);
+      setDamages(mockRoadDamages);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const filterDamages = () => {
     let filtered = damages;
@@ -43,10 +62,14 @@ const DamageListScreen = () => {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    setTimeout(() => {
-      setDamages([...mockRoadDamages]);
+    try {
+      const data = await fetchDamages(mockRoadDamages);
+      setDamages(data);
+    } catch (error) {
+      console.error('Yenileme hatası:', error);
+    } finally {
       setRefreshing(false);
-    }, 1000);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -256,11 +279,12 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   severityChip: {
-    height: 24,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
   },
   severityChipText: {
     color: '#FFFFFF',
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: 'bold',
   },
   description: {

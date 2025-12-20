@@ -1,16 +1,11 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { Card, Title, Paragraph, FAB, Button, Surface } from 'react-native-paper';
+import { View, StyleSheet, ScrollView } from 'react-native';
+import { Card, Title, Paragraph, Surface } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { mockStatistics } from '../data/mockData';
 
 const HomeScreen = () => {
   const navigation = useNavigation();
-
-  const handleNewDamageReport = () => {
-    // TODO: Yeni hasar raporu oluşturma ekranı
-    Alert.alert('Bilgi', 'Yeni hasar raporu özelliği yakında eklenecek!');
-  };
 
   const handleViewMap = () => {
     navigation.navigate('MapView' as never);
@@ -31,21 +26,12 @@ const HomeScreen = () => {
         <Surface style={styles.headerSurface}>
           <Title style={styles.headerTitle}>Hasar Tespit Sistemi</Title>
           <Paragraph style={styles.headerSubtitle}>
-            Hasar raporlarınızı kolayca oluşturun ve yönetin
+            Hasar raporlarını kolayca görüntüleyin ve yönetin
           </Paragraph>
         </Surface>
 
         {/* Hızlı Eylemler */}
         <View style={styles.quickActions}>
-          <Card style={styles.actionCard} onPress={handleNewDamageReport}>
-            <Card.Content style={styles.actionCardContent}>
-              <Title style={styles.actionTitle}>Yeni Hasar Raporu</Title>
-              <Paragraph style={styles.actionDescription}>
-                Yeni bir hasar kaydı oluşturun
-              </Paragraph>
-            </Card.Content>
-          </Card>
-
           <Card style={styles.actionCard} onPress={handleViewMap}>
             <Card.Content style={styles.actionCardContent}>
               <Title style={styles.actionTitle}>Harita Görünümü</Title>
@@ -93,14 +79,6 @@ const HomeScreen = () => {
           </View>
         </Surface>
       </ScrollView>
-
-      {/* Floating Action Button */}
-      <FAB
-        style={styles.fab}
-        icon="plus"
-        onPress={handleNewDamageReport}
-        label="Yeni Rapor"
-      />
     </View>
   );
 };
@@ -176,13 +154,6 @@ const styles = StyleSheet.create({
   statLabel: {
     color: '#666',
     marginTop: 4,
-  },
-  fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#6200ea',
   },
 });
 

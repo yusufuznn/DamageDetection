@@ -1,15 +1,19 @@
 import { RoadDamage, DamageReport, DamageStatistics, RoadSegment, DamageHeatZone } from '../types/DamageTypes';
 
-// Kırıkkale Üniversitesi civarı mock hasarlar
+// Merkez konum: 39.881697, 33.443401
+const CENTER_LAT = 39.881697;
+const CENTER_LNG = 33.443401;
+
+// Mock hasarlar - Ana konum civarında
 export const mockRoadDamages: RoadDamage[] = [
   {
     id: '1',
-    coordinate: { latitude: 39.8355, longitude: 33.5195 }, // Üniversite ana giriş
+    coordinate: { latitude: CENTER_LAT, longitude: CENTER_LNG },
     damageType: 'pothole',
     severity: 'severe',
     confidence: 95,
     detectedAt: '2025-12-15T09:30:00Z',
-    roadName: 'Kırıkkale Üniversitesi Ana Yol',
+    roadName: 'Ana Cadde',
     description: 'Büyük çukur - Acil müdahale gerekli',
     processed: false,
     priority: 5,
@@ -18,12 +22,12 @@ export const mockRoadDamages: RoadDamage[] = [
   },
   {
     id: '2',
-    coordinate: { latitude: 39.8342, longitude: 33.5210 }, // Mühendislik Fakültesi civarı
+    coordinate: { latitude: CENTER_LAT + 0.0008, longitude: CENTER_LNG - 0.0012 },
     damageType: 'crack',
     severity: 'moderate',
     confidence: 88,
     detectedAt: '2025-12-15T10:15:00Z',
-    roadName: 'Mühendislik Fakültesi Yolu',
+    roadName: 'Ara Sokak 1',
     description: 'Asfalt çatlağı - Onarım gerekiyor',
     processed: false,
     priority: 3,
@@ -32,12 +36,12 @@ export const mockRoadDamages: RoadDamage[] = [
   },
   {
     id: '3',
-    coordinate: { latitude: 39.8368, longitude: 33.5175 }, // Rektörlük binası civarı
+    coordinate: { latitude: CENTER_LAT - 0.0006, longitude: CENTER_LNG + 0.0015 },
     damageType: 'surface_wear',
     severity: 'none',
     confidence: 78,
     detectedAt: '2025-12-15T08:45:00Z',
-    roadName: 'Rektörlük Binası Önü',
+    roadName: 'Yan Yol',
     description: 'Hafif aşınma - Rutin kontrol yapıldı',
     processed: true,
     priority: 1,
@@ -46,12 +50,12 @@ export const mockRoadDamages: RoadDamage[] = [
   },
   {
     id: '4',
-    coordinate: { latitude: 39.8330, longitude: 33.5165 }, // Kütüphane civarı
+    coordinate: { latitude: CENTER_LAT + 0.0012, longitude: CENTER_LNG + 0.0008 },
     damageType: 'edge_damage',
     severity: 'moderate',
     confidence: 82,
     detectedAt: '2025-12-15T11:20:00Z',
-    roadName: 'Merkez Kütüphane Yolu',
+    roadName: 'Köşe Durağı',
     description: 'Kenar çöküntüsü - Orta seviye hasar',
     processed: false,
     priority: 3,
@@ -60,12 +64,12 @@ export const mockRoadDamages: RoadDamage[] = [
   },
   {
     id: '5',
-    coordinate: { latitude: 39.8380, longitude: 33.5220 }, // Yurt bölgesi
+    coordinate: { latitude: CENTER_LAT - 0.0010, longitude: CENTER_LNG - 0.0006 },
     damageType: 'pothole',
     severity: 'severe',
     confidence: 91,
     detectedAt: '2025-12-15T12:45:00Z',
-    roadName: 'Öğrenci Yurtları Yolu',
+    roadName: 'Kavşak Noktası',
     description: 'Derin çukur - Araç hasarı riski',
     processed: false,
     priority: 5,
@@ -74,12 +78,12 @@ export const mockRoadDamages: RoadDamage[] = [
   },
   {
     id: '6',
-    coordinate: { latitude: 39.8315, longitude: 33.5200 }, // Spor tesisleri
+    coordinate: { latitude: CENTER_LAT + 0.0005, longitude: CENTER_LNG + 0.0018 },
     damageType: 'water_damage',
     severity: 'moderate',
     confidence: 75,
     detectedAt: '2025-12-15T07:30:00Z',
-    roadName: 'Spor Kompleksi Girişi',
+    roadName: 'Park Girişi',
     description: 'Su birikintisi hasarı - Drenaj sorunu',
     processed: false,
     priority: 3,
@@ -98,23 +102,13 @@ export const mockRoadSegments: RoadSegment[] = [];
 export const mockDamageHeatZones: DamageHeatZone[] = [
   {
     id: 'zone-1',
-    center: { latitude: 39.8355, longitude: 33.5195 },
-    radius: 150,
-    damageCount: 2,
+    center: { latitude: CENTER_LAT, longitude: CENTER_LNG },
+    radius: 80,
+    damageCount: 3,
     severity: 'severe',
     damages: [mockRoadDamages[0], mockRoadDamages[4]],
     averageConfidence: 93,
     dominantDamageType: 'pothole'
-  },
-  {
-    id: 'zone-2',
-    center: { latitude: 39.8340, longitude: 33.5190 },
-    radius: 120,
-    damageCount: 2,
-    severity: 'moderate',
-    damages: [mockRoadDamages[1], mockRoadDamages[3]],
-    averageConfidence: 85,
-    dominantDamageType: 'crack'
   }
 ];
 

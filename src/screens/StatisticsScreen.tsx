@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, Dimensions, RefreshControl } from 'react-native';
 import {
   Card,
   Title,
@@ -10,23 +10,55 @@ import {
   List,
 } from 'react-native-paper';
 import { mockStatistics, mockRoadDamages, severityColors, damageTypeNames } from '../data/mockData';
-import { DamageStatistics } from '../types/DamageTypes';
+import { DamageStatistics, RoadDamage } from '../types/DamageTypes';
+import { fetchStatistics, fetchDamages } from '../services/aiService';
 
 const { width } = Dimensions.get('window');
 
 const StatisticsScreen = () => {
-  const [stats] = useState<DamageStatistics>(mockStatistics);
+  const [stats, setStats] = useState<DamageStatistics>(mockStatistics);
+  const [damages, setDamages] = useState<RoadDamage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [statsData, damagesData] = await Promise.all([
+        fetchStatistics(mockStatistics),
+        fetchDamages(mockRoadDamages)
+      ]);
+      setStats(statsData);
+      setDamages(damagesData);
+    } catch (error) {
+      console.error('Veri yükleme hatası:', error);
+      setStats(mockStatistics);
+      setDamages(mockRoadDamages);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  };
 
   const calculateDamageTypeStats = () => {
     const typeStats: { [key: string]: number } = {};
-    mockRoadDamages.forEach(damage => {
+    damages.forEach(damage => {
       typeStats[damage.damageType] = (typeStats[damage.damageType] || 0) + 1;
     });
     return Object.entries(typeStats).map(([type, count]) => ({
       type,
       name: damageTypeNames[type as keyof typeof damageTypeNames],
       count,
-      percentage: mockRoadDamages.length > 0 ? (count / mockRoadDamages.length) * 100 : 0
+      percentage: damages.length > 0 ? (count / damages.length) * 100 : 0
     }));
   };
 
