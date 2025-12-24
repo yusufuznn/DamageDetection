@@ -12,3 +12,8 @@
 - [ ] Hasarları koordinat bazlı alacak yakın bir alanda fazlaca hasar bildirisi eklenince nokta büyüyecek alan bazlı kaplama olacak. Korona zamanı hasta sayısı arttıkça bölgenin kızarması ve alanın büyümesi gibi
 
 
+
+yol tarifi
+
+girişte kullanıcı auth olacak
+kullanıcı id ile giriş yapılacak, o da ekibe bağlı olacak .
