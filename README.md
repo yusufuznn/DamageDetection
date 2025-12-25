@@ -13,7 +13,7 @@
 
 
 
-yol tarifi
+yol tarifi ✅
 
 girişte kullanıcı auth olacak
 kullanıcı id ile giriş yapılacak, o da ekibe bağlı olacak .
